@@ -81,5 +81,9 @@ LLM 실전 지식(프롬프트 엔지니어링, 바이브코딩, Agent Skills, R
 - 출처 확인(2026-11-24)
   - Claude 4.7 이후 모델과 API 버전 2026-10-21부터 temperature/top_p/top_k를 지원하지 않는다는 점을 레슨에 반영했다.
   - 현재 Claude 모델의 컨텍스트가 1M 토큰이라는 점을 반영했다.
-- 배포: GitHub 저장소 생성과 Pages 배포는 사용자 확인을 기다리는 중
-- 다음 할 일: 배포 → 2주차(프롬프트 엔지니어링 기본) 콘텐츠
+- 배포 완료(2026-11-24)
+  - 공개 저장소: https://github.com/tutleblue/llm-study
+  - 앱 주소: https://tutleblue.github.io/llm-study/
+  - Pages 설정: main 브랜치 `/docs` 폴더
+  - gh CLI에는 계정 이름이 `jykim5215`로 표시되지만 실제 GitHub 로그인은 `tutleblue`다(같은 계정).
+- 다음 할 일: 2주차(프롬프트 엔지니어링 기본) 콘텐츠 `docs/content/w02.js`

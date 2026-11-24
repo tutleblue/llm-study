@@ -58,7 +58,7 @@
 - 전체 로드맵(Mermaid), 학습자 수준별 추천 경로(입문/개발자/고급).
 - API 키 발급, 환경변수 관리, Python/Node 환경, Claude Code·Codex CLI 설치.
 - 비용 관리 기본(토큰 단가 보는 법, 사용량 한도 설정).
-- 참고: Anthropic Docs(docs.anthropic.com / docs.claude.com), OpenAI Platform Docs(platform.openai.com/docs), Claude Code 문서.
+- 참고: Anthropic Docs(platform.claude.com/docs — 옛 docs.anthropic.com 주소는 여기로 옮겨짐), OpenAI Platform Docs(platform.openai.com/docs), Claude Code 문서.
 
 ### 모듈 1. LLM은 어떻게 동작하나 (기초 직관)
 - 토큰화, 임베딩, 트랜스포머·어텐션의 직관, 다음 토큰 예측, temperature/top-p.
@@ -69,7 +69,7 @@
   - 3Blue1Brown 유튜브 "Neural networks" 시리즈 중 Transformer·Attention 편
   - 논문: *Attention Is All You Need* (Vaswani et al., 2017), *Language Models are Few-Shot Learners* (GPT-3, 2020), *Training language models to follow instructions with human feedback* (InstructGPT, 2022), *Constitutional AI* (Anthropic, 2022)
   - Jay Alammar "The Illustrated Transformer"
-  - GitHub: karpathy/nanoGPT, karpathy/minbpe
+  - GitHub: karpathy/minbpe, karpathy/nanochat (nanoGPT는 README에 "오래되어 deprecated"라고 적혀 있어 후속작 nanochat을 우선 참고)
 
 ### 모듈 2. 프롬프트 엔지니어링 기본
 - 명확·구체적 지시, 역할(system prompt), 예시(few-shot), 출력 형식 지정, XML 태그로 구조화.
@@ -88,7 +88,7 @@
 - 메타 프롬프팅(LLM으로 프롬프트 개선), Anthropic Console 프롬프트 생성·개선 도구.
 - 참고:
   - Anthropic Engineering 블로그 "Effective context engineering for AI agents"
-  - Anthropic Docs: prompt caching, structured outputs, extended thinking
+  - Anthropic Docs: prompt caching, structured outputs, thinking (extended thinking은 2026-11 기준 legacy 기능)
   - OpenAI Docs: Structured Outputs, prompt caching
   - 논문: *ReAct* (Yao et al., 2022), *Tree of Thoughts* (2023), *Lost in the Middle* (Liu et al., 2023)
   - Simon Willison 블로그의 prompt injection 시리즈

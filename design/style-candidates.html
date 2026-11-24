@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UI 스타일 후보 3종</title>
+<style>
+  body{margin:0;background:#e9e9ee;font-family:-apple-system,"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:#222}
+  header{padding:20px 24px 4px}
+  header h1{margin:0 0 6px;font-size:20px}
+  header p{margin:0;color:#555;font-size:14px}
+  .row{display:flex;gap:28px;padding:20px 24px 40px;overflow-x:auto}
+  .cand{flex:0 0 auto}
+  .cand h2{font-size:16px;margin:0 0 4px}
+  .cand .desc{font-size:13px;color:#555;margin:0 0 12px;max-width:620px}
+  .pair{display:flex;gap:14px}
+  .phone{width:300px;height:620px;border-radius:34px;overflow:hidden;position:relative;box-shadow:0 10px 30px rgba(0,0,0,.18);border:8px solid #111}
+  .phone .scr{position:absolute;inset:0;display:flex;flex-direction:column}
+  .top{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 10px;font-weight:700;font-size:14px}
+  .tabbar{margin-top:auto;display:flex;justify-content:space-around;padding:10px 0 16px;font-size:11px}
+  .tabbar div{display:flex;flex-direction:column;align-items:center;gap:3px}
+  .tabbar .ic{font-size:20px}
+  .path{flex:1;display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:6px}
+  .node{width:66px;height:62px;border-radius:50%;display:grid;place-items:center;font-size:24px}
+  .unit{margin:8px 14px 4px;border-radius:14px;padding:12px 14px}
+  .unit b{display:block;font-size:15px}
+  .unit span{font-size:12px;opacity:.85}
+  .q{padding:4px 18px;flex:1;display:flex;flex-direction:column}
+  .bar{height:14px;border-radius:8px;margin:14px 18px 8px;overflow:hidden}
+  .bar i{display:block;height:100%;width:60%}
+  .qt{font-size:19px;font-weight:800;margin:12px 0 16px;line-height:1.35}
+  .ch{border-radius:14px;padding:14px;margin-bottom:10px;font-size:15px}
+  .btn{margin:auto 18px 22px;border-radius:14px;padding:15px;text-align:center;font-weight:800;font-size:16px}
+  .fb{margin:0 0 0;padding:14px 18px 6px;font-size:14px}
+
+  /* A 밝고 통통 */
+  .A{background:#fff;color:#3c3c3c}
+  .A .top .s{color:#ff9600}.A .top .h{color:#ff4b4b}.A .top .g{color:#1cb0f6}
+  .A .unit{background:#58cc02;color:#fff;box-shadow:0 4px 0 #46a302}
+  .A .node{background:#58cc02;color:#fff;box-shadow:0 6px 0 #46a302}
+  .A .node.lock{background:#e5e5e5;color:#afafaf;box-shadow:0 6px 0 #c9c9c9}
+  .A .node.now{outline:6px solid #ddf4c9}
+  .A .tabbar{border-top:2px solid #e5e5e5;color:#777}
+  .A .bar{background:#e5e5e5}.A .bar i{background:#58cc02}
+  .A .ch{border:2px solid #e5e5e5;border-bottom-width:4px}
+  .A .ch.sel{border-color:#84d8ff;background:#ddf4ff;color:#1899d6}
+  .A .btn{background:#58cc02;color:#fff;box-shadow:0 4px 0 #46a302}
+  .A .fb{background:#d7ffb8;color:#58a700;font-weight:800}
+
+  /* B 다크 터미널 */
+  .B{background:#0d1117;color:#c9d1d9}
+  .B .top{font-family:"JetBrains Mono",Consolas,monospace;font-size:12px}
+  .B .top .s{color:#f0883e}.B .top .h{color:#ff7b72}.B .top .g{color:#7ee787}
+  .B .unit{background:#161b22;border:1px solid #30363d;font-family:Consolas,monospace}
+  .B .unit b{color:#7ee787}
+  .B .node{border-radius:12px;background:#161b22;border:1px solid #7ee787;color:#7ee787;font-size:18px;font-family:Consolas,monospace;box-shadow:0 0 14px rgba(126,231,135,.35)}
+  .B .node.lock{border-color:#30363d;color:#484f58;box-shadow:none}
+  .B .tabbar{border-top:1px solid #30363d;color:#8b949e}
+  .B .bar{background:#21262d;height:6px}.B .bar i{background:linear-gradient(90deg,#7ee787,#58a6ff)}
+  .B .qt{color:#f0f6fc}
+  .B .ch{background:#161b22;border:1px solid #30363d;font-family:Consolas,monospace;font-size:13px}
+  .B .ch.sel{border-color:#58a6ff;box-shadow:0 0 0 1px #58a6ff}
+  .B .btn{background:#238636;color:#fff;border:1px solid #2ea043}
+  .B .fb{background:#0f2a17;color:#7ee787;font-family:Consolas,monospace;font-size:12px}
+
+  /* C 미니멀 페이퍼 */
+  .C{background:#f7f4ee;color:#2b2723}
+  .C .top{font-weight:600}
+  .C .top .s,.C .top .h,.C .top .g{color:#8a5a2b}
+  .C .unit{background:#fff;border:1px solid #e6dfd3}
+  .C .unit b{font-family:Georgia,"Nanum Myeongjo",serif;font-size:17px}
+  .C .node{background:#fff;border:1.5px solid #2b2723;color:#2b2723;font-size:18px}
+  .C .node.done{background:#2b2723;color:#f7f4ee}
+  .C .node.lock{border-color:#d4ccbe;color:#c2b9a9}
+  .C .node.now{outline:4px solid #e8c9a0}
+  .C .tabbar{border-top:1px solid #e6dfd3;color:#8b8378}
+  .C .bar{background:#e6dfd3;height:4px}.C .bar i{background:#2b2723}
+  .C .qt{font-family:Georgia,"Nanum Myeongjo",serif;font-weight:600}
+  .C .ch{background:#fff;border:1px solid #e6dfd3}
+  .C .ch.sel{border-color:#2b2723}
+  .C .btn{background:#2b2723;color:#f7f4ee;font-weight:600}
+  .C .fb{background:#efe6d6;color:#5b4a35}
+</style>
+</head>
+<body>
+<header>
+  <h1>UI 스타일 후보 — 하나를 골라 주세요</h1>
+  <p>각 후보마다 왼쪽은 홈(학습 경로), 오른쪽은 문제 풀이 화면입니다. 기능은 셋 다 같고 겉모양만 다릅니다. 가로로 스크롤하세요.</p>
+</header>
+<div class="row">
+
+  <!-- A -->
+  <div class="cand">
+    <h2>A. 통통 게임형</h2>
+    <p class="desc">밝은 초록, 두꺼운 3D 버튼, 동그란 노드. 듀오링고와 가장 비슷한 느낌으로 "게임하듯" 매일 들어오게 만드는 데 초점.</p>
+    <div class="pair">
+      <div class="phone A"><div class="scr">
+        <div class="top"><span>🇰🇷 LLM</span><span class="s">🔥 12</span><span class="g">💎 340</span><span class="h">❤️ 5</span></div>
+        <div class="unit"><b>1주차 · LLM은 어떻게 동작하나</b><span>오늘 목표 30분 중 18분</span></div>
+        <div class="path">
+          <div class="node">✓</div>
+          <div class="node" style="margin-left:70px">✓</div>
+          <div class="node now" style="margin-left:90px">★</div>
+          <div class="node lock" style="margin-left:40px">🔒</div>
+          <div class="node lock" style="margin-left:-40px">🎁</div>
+        </div>
+        <div class="tabbar"><div><span class="ic">🏠</span>학습</div><div><span class="ic">🔁</span>복습</div><div><span class="ic">🃏</span>카드</div><div><span class="ic">📊</span>기록</div></div>
+      </div></div>
+      <div class="phone A"><div class="scr">
+        <div class="bar"><i></i></div>
+        <div class="q">
+          <div class="qt">temperature를 0에 가깝게 낮추면 어떻게 될까요?</div>
+          <div class="ch">더 창의적이고 다양한 답이 나온다</div>
+          <div class="ch sel">가장 확률 높은 토큰을 고르게 되어 답이 일정해진다</div>
+          <div class="ch">모델이 더 많은 지식을 쓴다</div>
+        </div>
+        <div class="fb">🎉 정답이에요!<br><span style="font-weight:500">낮은 temperature = 확률 분포가 뾰족해짐</span></div>
+        <div class="btn" style="margin-top:12px">계속하기</div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="cand">
+    <h2>B. 다크 터미널형</h2>
+    <p class="desc">어두운 배경, 코드 글꼴, 네온 초록 포인트. 개발자 도구처럼 보이는 분위기. 밤에 눈이 편하고 "해커 레벨업" 감성.</p>
+    <div class="pair">
+      <div class="phone B"><div class="scr">
+        <div class="top"><span>~/llm-study</span><span class="s">streak 12d</span><span class="g">xp 340</span><span class="h">♥ 5</span></div>
+        <div class="unit"><b>$ week01 --how-llms-work</b><span>today: 18/30 min</span></div>
+        <div class="path">
+          <div class="node">[✓]</div>
+          <div class="node" style="margin-left:70px">[✓]</div>
+          <div class="node" style="margin-left:90px;background:#7ee787;color:#0d1117">&gt;_</div>
+          <div class="node lock" style="margin-left:40px">[ ]</div>
+          <div class="node lock" style="margin-left:-40px">[ ]</div>
+        </div>
+        <div class="tabbar"><div><span class="ic">⌂</span>learn</div><div><span class="ic">↻</span>review</div><div><span class="ic">▤</span>cards</div><div><span class="ic">▥</span>stats</div></div>
+      </div></div>
+      <div class="phone B"><div class="scr">
+        <div class="bar"><i></i></div>
+        <div class="q">
+          <div class="qt">temperature를 0에 가깝게 낮추면 어떻게 될까요?</div>
+          <div class="ch">더 창의적이고 다양한 답이 나온다</div>
+          <div class="ch sel">가장 확률 높은 토큰을 고르게 되어 답이 일정해진다</div>
+          <div class="ch">모델이 더 많은 지식을 쓴다</div>
+        </div>
+        <div class="fb">✔ PASS  +10xp<br>// 낮은 temperature = 분포가 뾰족해짐</div>
+        <div class="btn" style="margin-top:12px">continue →</div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="cand">
+    <h2>C. 미니멀 페이퍼형</h2>
+    <p class="desc">따뜻한 종이색, 세리프 제목, 장식 최소. 책·노트로 공부하는 차분한 느낌. 긴 설명 카드가 읽기 편함.</p>
+    <div class="pair">
+      <div class="phone C"><div class="scr">
+        <div class="top"><span>LLM 노트</span><span class="s">연속 12일</span><span class="g">340 XP</span><span class="h">♡ 5</span></div>
+        <div class="unit"><b>1주차 — LLM은 어떻게 동작하나</b><span>오늘 18 / 30분</span></div>
+        <div class="path">
+          <div class="node done">1</div>
+          <div class="node done" style="margin-left:70px">2</div>
+          <div class="node now" style="margin-left:90px">3</div>
+          <div class="node lock" style="margin-left:40px">4</div>
+          <div class="node lock" style="margin-left:-40px">5</div>
+        </div>
+        <div class="tabbar"><div><span class="ic">◎</span>학습</div><div><span class="ic">↺</span>복습</div><div><span class="ic">▢</span>카드</div><div><span class="ic">▤</span>기록</div></div>
+      </div></div>
+      <div class="phone C"><div class="scr">
+        <div class="bar"><i></i></div>
+        <div class="q">
+          <div class="qt">temperature를 0에 가깝게 낮추면 어떻게 될까요?</div>
+          <div class="ch">더 창의적이고 다양한 답이 나온다</div>
+          <div class="ch sel">가장 확률 높은 토큰을 고르게 되어 답이 일정해진다</div>
+          <div class="ch">모델이 더 많은 지식을 쓴다</div>
+        </div>
+        <div class="fb"><b>맞았습니다.</b><br>낮은 temperature는 확률 분포를 뾰족하게 만듭니다.</div>
+        <div class="btn" style="margin-top:12px">다음</div>
+      </div></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

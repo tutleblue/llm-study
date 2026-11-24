@@ -58,14 +58,15 @@
     return '<span class="meter"><span class="on">' + "█".repeat(n) + '</span><span class="off">' + "░".repeat(width - n) + "</span></span>";
   }
   function titlebar(path) {
-    var st = S.streak();
+    var dn = LESSONS.filter(function (x) { return isDone(x.lesson.id); }).length;
     return '<div class="titlebar"><span class="dots"><i></i><i></i><i></i></span><span class="path">' + esc(path) +
-      '</span><span class="chip">🔥 ' + st + "일</span></div>";
+      '</span><span class="chip">' + dn + "/" + LESSONS.length + "</span></div>";
   }
   function cmd(c) { return '<div class="cmd"><span class="ps">$</span> ' + esc(c) + "</div>"; }
 
   /* ---------- course index ---------- */
   var LESSONS = [], BYID = {}, CARDS = [];
+  function unitTag(w) { return "u" + w.id.replace(/^w/, ""); } // 대주제 표시 이름 (진도 키는 w.id 그대로)
   function lessonCards(l) { // 레슨 카드 + 템플릿 스텝에서 나오는 템플릿 카드
     var out = (l.cards || []).slice();
     l.steps.forEach(function (st) {
@@ -77,7 +78,7 @@
     if (!w.days) return;
     w.days.forEach(function (d, di) {
       d.lessons.forEach(function (l, li) {
-        var full = { lesson: l, week: w, day: d, dayNo: di + 1, no: li + 1, path: w.id + "/day" + (di + 1) + "/" + String(li + 1).padStart(2, "0") };
+        var full = { lesson: l, week: w, day: d, dayNo: di + 1, no: li + 1, path: unitTag(w) + "/ch" + (di + 1) + "/" + String(li + 1).padStart(2, "0") };
         LESSONS.push(full); BYID[l.id] = full;
         lessonCards(l).forEach(function (c) { CARDS.push({ card: c, from: full }); });
       });
@@ -108,25 +109,24 @@
 
   /* ---------- home ---------- */
   function renderHome() {
-    var s = S.get(), td = S.todayStat(), due = S.dueReviews().length, ni = nextLessonIdx();
-    var goal = S.DAILY_GOAL, goalHit = td.lessons >= goal;
+    var s = S.get(), due = S.dueReviews().length, ni = nextLessonIdx();
+    var allDn = LESSONS.filter(function (x) { return isDone(x.lesson.id); }).length;
     var h = titlebar("~/llm-study");
     h += cmd("status");
     h += '<div class="out kv">' +
-      '<span class="k">streak</span><span><span class="orange">🔥 ' + S.streak() + "일</span> 연속</span>" +
-      '<span class="k">today</span><span>' + bar(Math.min(td.lessons, goal), goal, goal * 3) + " " + td.lessons + "/" + goal + " 레슨 · " + td.min + "분" + (goalHit ? ' <span class="green">✔ 목표 달성</span>' : "") + "</span>" +
+      '<span class="k">progress</span><span>' + bar(allDn, LESSONS.length, 12) + " " + allDn + "/" + LESSONS.length + " 레슨</span>" +
       '<span class="k">xp</span><span class="yellow">' + s.xp + "</span>" +
       '<span class="k">review</span><span>' + (due ? '<button class="blue mono" data-go="#/review">' + due + "문제 대기 →</button>" : '<span class="dim">대기 없음</span>') + "</span>" +
       "</div>";
 
     if (ni >= 0) {
       var n = LESSONS[ni];
-      h += '<button class="run' + (goalHit ? " done" : "") + '" data-lesson="' + esc(n.lesson.id) + '">' +
-        '<div class="l1">' + (goalHit ? "# 오늘 목표는 채웠어요 · 더 하기" : "▶ 다음 레슨") + "</div>" +
+      h += '<button class="run" data-lesson="' + esc(n.lesson.id) + '">' +
+        '<div class="l1">▶ 이어서 하기 · ' + esc(unitTag(n.week)) + " " + esc(n.week.title) + "</div>" +
         '<div class="l2">' + esc(n.lesson.title) + "</div>" +
         '<div class="l3">$ run ' + esc(n.path) + " · 약 " + (n.lesson.minutes || 8) + "분</div></button>";
     } else if (LESSONS.length) {
-      h += '<div class="box"><div class="green mono">✔ 열린 레슨을 모두 끝냈어요.</div><div class="dim">다음 주차가 올라오면 여기 나타납니다. 그동안 review 탭에서 복습하세요.</div></div>';
+      h += '<div class="box"><div class="green mono">✔ 열린 레슨을 모두 끝냈어요.</div><div class="dim">다음 대주제가 올라오면 여기 나타납니다. 그동안 review 탭에서 복습하세요.</div></div>';
     }
 
     h += cmd("tree course/");
@@ -134,19 +134,19 @@
     C.weeks.forEach(function (w, wi) {
       var last = wi === C.weeks.length - 1;
       if (!w.days) {
-        h += '<div class="row soon"><span class="pre">' + (last ? "└── " : "├── ") + '</span><span class="st dim">   </span><span class="nm">' + esc(w.id) + "/ " + esc(w.title) + "<small>준비 중</small></span></div>";
+        h += '<div class="row soon"><span class="pre">' + (last ? "└── " : "├── ") + '</span><span class="st dim">   </span><span class="nm">' + esc(unitTag(w)) + "/ " + esc(w.title) + "<small>준비 중</small></span></div>";
         return;
       }
       var ls = LESSONS.filter(function (x) { return x.week === w; });
       var dn = ls.filter(function (x) { return isDone(x.lesson.id); }).length;
-      var open = w.id in s.open ? s.open[w.id] : (ni >= 0 && LESSONS[ni].week === w); // 지금 공부할 주차는 기본으로 펼침
-      h += '<button class="row week" data-week="' + w.id + '" aria-expanded="' + !!open + '"><span class="pre">' + (last ? "└── " : "├── ") + '</span><span class="st blue">' + (open ? "▾" : "▸") + '</span><span class="nm">' + esc(w.id) + "/ " + esc(w.title) +
+      var open = w.id in s.open ? s.open[w.id] : (ni >= 0 && LESSONS[ni].week === w); // 지금 공부할 대주제는 기본으로 펼침
+      h += '<button class="row week" data-week="' + w.id + '" aria-expanded="' + !!open + '"><span class="pre">' + (last ? "└── " : "├── ") + '</span><span class="st blue">' + (open ? "▾" : "▸") + '</span><span class="nm">' + esc(unitTag(w)) + "/ " + esc(w.title) +
         "<small>" + bar(dn, ls.length, 10) + " " + dn + "/" + ls.length + "</small></span></button>";
       if (!open) return;
       var bar1 = last ? "   " : "│  ";
       w.days.forEach(function (d, di) {
         var lastD = di === w.days.length - 1;
-        h += '<div class="row day"><span class="pre">' + bar1 + (lastD ? "└─ " : "├─ ") + '</span><span class="nm">day' + (di + 1) + "/ " + esc(d.title) + "</span></div>";
+        h += '<div class="row day"><span class="pre">' + bar1 + (lastD ? "└─ " : "├─ ") + '</span><span class="nm">ch' + (di + 1) + "/ " + esc(d.title) + "</span></div>";
         var bar2 = bar1 + (lastD ? "   " : "│  ");
         d.lessons.forEach(function (l, li) {
           var idx = LESSONS.indexOf(BYID[l.id]);
@@ -354,7 +354,7 @@
     var keys = Object.keys(P.firstTry), right = keys.filter(function (k) { return P.firstTry[k]; }).length;
     var acc = keys.length ? right / keys.length : 1;
     var minutes = Math.max(1, Math.min(20, Math.round((Date.now() - P.t0) / 60000)));
-    var before = S.streak(), xp, newCards = [];
+    var xp, newCards = [];
     if (P.mode === "lesson") {
       xp = 10 + (acc === 1 ? 5 : 0);
       var had = S.get().cards.slice();
@@ -368,21 +368,21 @@
       if (P.mode === "review") keys.forEach(function (k) { res[k] = P.firstTry[k]; });
       S.finishReview(res, xp, minutes);
     }
-    var after = S.streak(), td = S.todayStat();
+    var allDn = LESSONS.filter(function (x) { return isDone(x.lesson.id); }).length;
     var h = '<div class="lesson"><div class="lbody pop">';
     h += cmd((P.mode === "lesson" ? "run " : "") + P.title);
     h += '<div class="out"><div class="green">✔ ' + (P.mode === "lesson" ? "lesson complete" : "review complete") + '</div><div class="dim">exit code 0</div></div>';
     h += '<div class="grid2">' +
       '<div class="box"><h4>xp</h4><div class="big yellow">+' + xp + "</div></div>" +
       '<div class="box"><h4>정답률(첫 시도)</h4><div class="big">' + Math.round(acc * 100) + "%</div></div>" +
-      '<div class="box"><h4>streak</h4><div class="big orange">🔥 ' + after + "</div>" + (after > before ? '<div class="green mono">+1일!</div>' : "") + "</div>" +
-      '<div class="box"><h4>오늘</h4><div class="big">' + td.lessons + "/" + S.DAILY_GOAL + '</div><div class="dim mono">' + td.min + "분</div></div></div>";
-    if (Object.keys(P.wrong).length && P.mode === "lesson") h += '<div class="box"><span class="blue mono">↻</span> 틀린 ' + Object.keys(P.wrong).length + "문제는 내일 review에 다시 나옵니다.</div>";
+      '<div class="box"><h4>진도</h4><div class="big">' + allDn + '<span class="dim mono"> / ' + LESSONS.length + "</span></div></div>" +
+      '<div class="box"><h4>총 xp</h4><div class="big yellow">' + S.get().xp + "</div></div></div>";
+    if (Object.keys(P.wrong).length && P.mode === "lesson") h += '<div class="box"><span class="blue mono">↻</span> 틀린 ' + Object.keys(P.wrong).length + "문제는 review에 다시 나옵니다.</div>";
     newCards.forEach(function (c) { h += cardHtml(c, true); });
     if (S.saveFailed()) h += '<div class="box red">⚠ 이 브라우저에 진도를 저장하지 못했습니다(비공개 모드이거나 저장 공간이 꽉 찼을 수 있음).</div>';
     h += "</div><div class=\"lfoot\">";
     var ni = nextLessonIdx();
-    if (P.mode === "lesson" && ni >= 0 && td.lessons < S.DAILY_GOAL) h += '<button class="btn" data-lesson-go="' + esc(LESSONS[ni].lesson.id) + '">다음 레슨 →</button><button class="btn ghost" data-go="#/">홈으로</button>';
+    if (P.mode === "lesson" && ni >= 0) h += '<button class="btn" data-lesson-go="' + esc(LESSONS[ni].lesson.id) + '">다음 레슨 →</button><button class="btn ghost" data-go="#/">홈으로</button>';
     else h += '<button class="btn" data-go="#/">홈으로</button>';
     h += "</div></div>";
     P = null;
@@ -428,7 +428,7 @@
       }).join("") + "</div>";
       h += '<button class="run" data-act-review="due"><div class="l1">▶ 지금 복습</div><div class="l2">' + due.length + '문제</div><div class="l3">맞히면 다음 복습까지 간격이 1→2→4→7→15일로 늘어나요</div></button>';
     } else {
-      h += '<div class="empty">오늘 복습할 문제가 없습니다. ✔</div>';
+      h += '<div class="empty">지금 복습할 문제가 없습니다. ✔</div>';
       if (all.length) h += '<div class="out dim">대기 중 ' + all.length + "문제 · 다음 복습일 " + all.map(function (k) { return S.get().review[k].due; }).sort()[0] + "</div>";
     }
     var doneQ = [];
@@ -486,29 +486,15 @@
     var totalMin = Object.keys(s.days).reduce(function (a, d) { return a + s.days[d].min; }, 0);
     var h = titlebar("~/llm-study/stats") + cmd("stats");
     h += '<div class="grid2">' +
-      '<div class="box"><h4>연속 학습</h4><div class="big orange">🔥 ' + S.streak() + "일</div></div>" +
       '<div class="box"><h4>총 xp</h4><div class="big yellow">' + s.xp + "</div></div>" +
       '<div class="box"><h4>완료 레슨</h4><div class="big">' + doneIds.length + '<span class="dim mono"> / ' + LESSONS.length + "</span></div></div>" +
-      '<div class="box"><h4>최고 정답률 평균</h4><div class="big">' + Math.round(avg * 100) + "%</div></div></div>";
-    h += '<div class="box"><h4>총 학습 시간</h4><div class="mono">' + totalMin + "분</div></div>";
+      '<div class="box"><h4>최고 정답률 평균</h4><div class="big">' + Math.round(avg * 100) + "%</div></div>" +
+      '<div class="box"><h4>총 학습 시간</h4><div class="big">' + totalMin + '<span class="dim mono"> 분</span></div></div></div>';
 
-    // 최근 28일 히트맵 (월요일 시작 정렬)
-    h += cmd("log --last 28d");
-    var t = S.today(), start = S.addDays(t, -27);
-    var p = start.split("-").map(Number), dow = (new Date(p[0], p[1] - 1, p[2]).getDay() + 6) % 7;
-    h += '<div class="heat">' + ["월", "화", "수", "목", "금", "토", "일"].map(function (d) { return '<div class="dimmer">' + d + "</div>"; }).join("");
-    for (var k = 0; k < dow; k++) h += "<div></div>";
-    for (var i = 0; i < 28; i++) {
-      var d = S.addDays(start, i), n = s.days[d] ? s.days[d].lessons + (s.days[d].rev ? 1 : 0) : 0;
-      var lv = n >= 3 ? "l3" : n === 2 ? "l2" : n === 1 ? "l1" : "";
-      h += '<div class="' + lv + (d === t ? " today" : "") + '" title="' + d + " · " + n + '레슨">' + +d.slice(8) + "</div>";
-    }
-    h += "</div>";
-
-    h += cmd("progress --by-week");
+    h += cmd("progress --by-unit");
     h += '<div class="out">' + C.weeks.filter(function (w) { return w.days; }).map(function (w) {
       var ls = LESSONS.filter(function (x) { return x.week === w; }), dn = ls.filter(function (x) { return isDone(x.lesson.id); }).length;
-      return "<div>" + esc(w.id) + " " + bar(dn, ls.length, 12) + " " + dn + "/" + ls.length + "</div>";
+      return "<div>" + esc(unitTag(w)) + " " + bar(dn, ls.length, 12) + " " + dn + "/" + ls.length + "</div>";
     }).join("") + "</div>";
 
     h += cmd("backup --help");

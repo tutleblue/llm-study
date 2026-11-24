@@ -1,7 +1,7 @@
 {
   "name": "llm-study",
   "short_name": "llm-study",
-  "description": "하루 30분, 터미널처럼 배우는 LLM 실전 지식",
+  "description": "대주제·챕터로 터미널처럼 배우는 LLM 실전 지식",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

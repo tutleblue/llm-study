@@ -3,7 +3,6 @@
   "use strict";
   var KEY = "llmstudy.v1";
   var REVIEW_GAPS = [1, 2, 4, 7, 15]; // 복습 상자별 다음 복습까지 일수
-  var DAILY_GOAL = 3;                 // 하루 3레슨 ≈ 30분
 
   function blank() {
     return { v: 1, xp: 0, done: {}, days: {}, review: {}, cards: [], open: {} };
@@ -120,7 +119,7 @@
   window.Store = {
     load: load, save: save, get: function () { return state; }, today: today, addDays: addDays,
     streak: streak, todayStat: todayStat, dueReviews: dueReviews, finishLesson: finishLesson, finishReview: finishReview,
-    exportCode: exportCode, importCode: importCode, reset: reset, DAILY_GOAL: DAILY_GOAL,
+    exportCode: exportCode, importCode: importCode, reset: reset,
     saveFailed: function () { return saveFailed; }
   };
 })();

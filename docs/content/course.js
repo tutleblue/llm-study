@@ -1,6 +1,6 @@
-/* 코스 뼈대. 주차 내용은 content/wNN.js 가 registerWeek()로 채운다. */
+/* 코스 뼈대. 대주제 내용은 content/wNN.js 가 registerWeek()로 채운다. */
 window.COURSE = {
-  version: "0.3.0",
+  version: "0.4.0",
   weeks: [
     { id: "w01", title: "LLM은 어떻게 동작하나", part: "1부 기초" },
     { id: "w02", title: "프롬프트 엔지니어링 기본", part: "1부 기초" },

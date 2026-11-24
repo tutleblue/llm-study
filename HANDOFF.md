@@ -40,6 +40,7 @@ LLM 실전 지식(프롬프트 엔지니어링, 바이브코딩, Agent Skills, R
   ├── js/app.js          # 해시 라우터: #/ (홈) · #/lesson/<id> · #/review · #/cards · #/stats
   ├── content/course.js  # 14주 목록 + registerWeek()
   ├── content/w01.js     # 1주차 15레슨(5일 × 3), 문제 44개, 카드 7장
+  ├── content/w02.js     # 2주차 프롬프트 기본 15레슨, 문제 46개, 카드 7장
   ├── manifest.webmanifest, icon.svg, icon-180/192/512.png
   └── version.json
   ```
@@ -58,7 +59,7 @@ LLM 실전 지식(프롬프트 엔지니어링, 바이브코딩, Agent Skills, R
 ## 4. 구현 계획 / 다음 주차 추가 방법
 
 1. `docs/content/wNN.js`를 `w01.js`와 같은 형식으로 쓴다. 기준은 `LLM_학습자료_생성_프롬프트.md`와 `학습계획안.md`다. 출처는 공식 문서로 확인하고 확인일을 적는다.
-2. `index.html`에 `<script src="content/wNN.js">`를 `w01.js` 다음 줄에 넣는다.
+2. `index.html`에 `<script src="content/wNN.js?v=X.Y.Z">`를 마지막 주차 스크립트 다음 줄에 넣는다. 배포할 때마다 모든 `?v=` 값, `COURSE.version`, `version.json`을 함께 올린다(휴대폰 캐시 무효화).
 3. 레슨 id는 `wNNdXlY` 형식을 쓰고 기존 id는 절대 바꾸지 않는다(진도 키이기 때문).
 4. 브라우저 콘솔에서 콘텐츠 검사를 돌린다(mcq 정답 인덱스 범위, ox는 boolean, id 중복 없음).
 5. 375×812 화면에서 레슨 하나를 끝까지 풀어 본다.
@@ -73,17 +74,21 @@ LLM 실전 지식(프롬프트 엔지니어링, 바이브코딩, Agent Skills, R
 - 원문을 길게 옮기지 않는다. 요약하고 출처 링크를 단다.
 - 클래스 이름 `.lesson`은 레슨 플레이어 전용이다. 트리 행은 `.lsn`을 쓴다(이름이 겹쳐 생긴 버그가 있었음).
 
-## 6. 현재 상태 (v0.1.0)
+## 6. 현재 상태 (v0.2.0)
 
-- 끝난 것
-  - 앱 전체(홈·레슨·복습·카드·기록·백업)와 1주차 콘텐츠
-  - 로컬에서 375×812 화면으로 확인: 레슨 풀기, 오답 다시 풀기, 순서 맞추기, 카드 열림, 복습 상자 이동, 기록 화면
-- 출처 확인(2026-11-24)
-  - Claude 4.7 이후 모델과 API 버전 2026-10-21부터 temperature/top_p/top_k를 지원하지 않는다는 점을 레슨에 반영했다.
-  - 현재 Claude 모델의 컨텍스트가 1M 토큰이라는 점을 반영했다.
-- 배포 완료(2026-11-24)
-  - 공개 저장소: https://github.com/tutleblue/llm-study
+- 배포됨
+  - 저장소: https://github.com/tutleblue/llm-study (main 브랜치 `/docs`)
   - 앱 주소: https://tutleblue.github.io/llm-study/
-  - Pages 설정: main 브랜치 `/docs` 폴더
   - gh CLI에는 계정 이름이 `jykim5215`로 표시되지만 실제 GitHub 로그인은 `tutleblue`다(같은 계정).
-- 다음 할 일: 2주차(프롬프트 엔지니어링 기본) 콘텐츠 `docs/content/w02.js`
+- 콘텐츠
+  - 1주차 LLM 동작 원리, 2주차 프롬프트 엔지니어링 기본: 각 15레슨
+  - 2주차 출처 확인(2026-11-24): Claude Prompting best practices, OpenAI developers 문서(prompt engineering, reasoning best practices), Google AI Studio prompting strategies, CoT·Zero-shot CoT·Self-Consistency 논문
+  - 반영한 최신 사항
+    - Claude 4.6 이후는 prefill을 지원하지 않는다.
+    - 추론 모델에는 수동 CoT보다 내장 thinking을 쓴다.
+    - 최신 모델은 지시를 말 그대로 따른다.
+- v0.2.0에서 바뀐 점
+  - 다음 레슨이 있는 주차를 홈 트리에서 자동으로 펼친다.
+  - 자산 URL에 `?v=` 캐시 무효화를 붙였다.
+- 검증: 2주차 15레슨 전체를 정답으로 자동 풀이해 결과 화면까지 갔고, 375×812 화면을 확인했다.
+- 다음 할 일: 3주차(프롬프트 엔지니어링 심화: 구조화 출력, 컨텍스트 엔지니어링, 캐싱, 프롬프트 인젝션)

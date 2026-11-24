@@ -131,7 +131,7 @@
       }
       var ls = LESSONS.filter(function (x) { return x.week === w; });
       var dn = ls.filter(function (x) { return isDone(x.lesson.id); }).length;
-      var open = s.open[w.id];
+      var open = w.id in s.open ? s.open[w.id] : (ni >= 0 && LESSONS[ni].week === w); // 지금 공부할 주차는 기본으로 펼침
       h += '<button class="row week" data-week="' + w.id + '" aria-expanded="' + !!open + '"><span class="pre">' + (last ? "└── " : "├── ") + '</span><span class="st blue">' + (open ? "▾" : "▸") + '</span><span class="nm">' + esc(w.id) + "/ " + esc(w.title) +
         "<small>" + bar(dn, ls.length, 10) + " " + dn + "/" + ls.length + "</small></span></button>";
       if (!open) return;
@@ -157,7 +157,7 @@
   app.addEventListener("click", function (e) {
     var go = e.target.closest("[data-go]"); if (go) { location.hash = go.getAttribute("data-go"); return; }
     var wk = e.target.closest("[data-week]");
-    if (wk) { var s = S.get(), id = wk.getAttribute("data-week"); s.open[id] = !s.open[id]; S.save(); renderHome(); return; }
+    if (wk) { var s = S.get(), id = wk.getAttribute("data-week"); s.open[id] = wk.getAttribute("aria-expanded") !== "true"; S.save(); renderHome(); return; }
     var ls = e.target.closest("[data-lesson]");
     if (ls && !document.body.classList.contains("in-lesson")) {
       var id2 = ls.getAttribute("data-lesson"), idx = LESSONS.indexOf(BYID[id2]);

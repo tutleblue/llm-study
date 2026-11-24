@@ -6,7 +6,7 @@
   var DAILY_GOAL = 3;                 // 하루 3레슨 ≈ 30분
 
   function blank() {
-    return { v: 1, xp: 0, done: {}, days: {}, review: {}, cards: [], open: { w01: true } };
+    return { v: 1, xp: 0, done: {}, days: {}, review: {}, cards: [], open: {} };
   }
 
   function today(d) {

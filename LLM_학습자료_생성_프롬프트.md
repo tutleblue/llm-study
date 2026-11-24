@@ -77,7 +77,7 @@
 - 실습: 같은 과제를 나쁜 프롬프트 → 좋은 프롬프트로 5단계 개선.
 - 참고:
   - Anthropic Docs "Prompt engineering overview" 및 하위 가이드
-  - GitHub: anthropics/prompt-eng-interactive-tutorial, anthropics/courses
+  - GitHub: anthropics/prompt-eng-interactive-tutorial(Claude 3 기준이라 5장의 prefill 등은 최신 문서와 다름 — 다르면 Prompting best practices를 따른다), anthropics/courses
   - OpenAI Docs "Prompt engineering", "Reasoning best practices", 모델별 프롬프팅 가이드(OpenAI Cookbook)
   - 논문: *Chain-of-Thought Prompting Elicits Reasoning* (Wei et al., 2022), *Self-Consistency* (Wang et al., 2022)
 

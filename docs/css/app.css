@@ -145,3 +145,77 @@ textarea.code{width:100%;min-height:110px;background:var(--bg);color:var(--fg);b
 .pop{animation:pop .35s ease-out}
 @keyframes pop{0%{transform:translateY(6px)}100%{transform:none}}
 @media (prefers-reduced-motion:reduce){.pop{animation:none}}
+
+/* ---------- 실전 스텝: chat / screen / template / fix ---------- */
+.chat{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:10px 10px 12px;margin:4px 0 8px}
+.chat.bad{border-color:#6e2a2a}.chat.good{border-color:var(--green-d)}
+.chat-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-family:var(--mono);font-size:12px}
+.chat-top .tool{color:var(--dim);margin-left:auto}
+.cbadge{border-radius:6px;padding:1px 8px;font-weight:700}
+.cbadge.bad{background:#3d1416;color:var(--red)}.cbadge.good{background:#0f2a17;color:var(--green)}
+.msg{display:flex;flex-direction:column;margin:8px 0}
+.msg .who{font-family:var(--mono);font-size:11px;color:var(--dimmer);margin:0 4px 2px}
+.msg .bubble{max-width:88%;padding:10px 12px;border-radius:14px;font-size:15px;line-height:1.6;word-break:keep-all;overflow-wrap:anywhere}
+.msg.me{align-items:flex-end}.msg.me .bubble{background:#0c2d4a;border:1px solid #1f6feb;color:var(--fg-hi);border-bottom-right-radius:4px}
+.msg.ai{align-items:flex-start}.msg.ai .bubble{background:var(--line2);border:1px solid var(--line);border-bottom-left-radius:4px}
+.bubble code,.pb-t code{font-family:var(--mono);font-size:.88em;color:var(--orange)}
+mark{background:#e3b34133;color:var(--yellow);border-bottom:2px solid var(--yellow);border-radius:2px;padding:0 1px}
+.note{font-family:var(--mono);font-size:12.5px;color:var(--dim);margin:6px 2px 8px;line-height:1.6}
+
+.scr-cap{font-family:var(--mono);font-size:12.5px;color:var(--dim);margin:2px 0 8px}
+.mock{margin:0 auto 10px;border:1px solid var(--line);border-radius:14px;background:#f6f7f9;color:#1f2328;font-family:var(--sans);overflow:hidden}
+.mock-phone{max-width:260px;border:6px solid #2d333b;border-radius:26px}
+.mock-desktop{border-top:22px solid #2d333b}
+.mock-web{border-top:22px solid #2d333b;background:#fff}
+.mock-doc{background:#fff;border-radius:4px;max-width:300px;box-shadow:0 2px 12px rgba(0,0,0,.4)}
+.mock-in{padding:12px;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.45}
+.mock-doc .mock-in{padding:18px 16px;font-family:"Noto Serif KR","Batang",serif}
+.blk{position:relative;border-radius:6px}
+.blk-bar{background:#1f2328;color:#fff;font-weight:700;padding:8px 10px;margin:-12px -12px 2px;border-radius:0}
+.blk-input{border:1px solid #c9ccd1;background:#fff;color:#8b949e;padding:8px 10px}
+.blk-button{background:#2563eb;color:#fff;text-align:center;font-weight:700;padding:9px}
+.blk-text{color:#57606a;font-size:12.5px}
+.blk-card{background:#fff;border:1px solid #d0d7de;padding:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.blk-img{background:repeating-linear-gradient(45deg,#e5e7eb,#e5e7eb 6px,#eef0f3 6px,#eef0f3 12px);color:#8b949e;text-align:center;padding:18px 6px;font-size:12px}
+.blk-heading{font-weight:800;font-size:15px;color:#111}
+.blk-para{color:#333;font-size:12.5px}
+.blk-blank{background:#fff8c5;border:1px dashed #d4a72c;color:#9a6700;padding:6px 8px;font-size:12px}
+.blk-chip{display:inline-block;align-self:flex-start;background:#eef2ff;color:#3730a3;border-radius:999px;padding:2px 10px;font-size:12px}
+.blk-hero{padding:16px 10px;text-align:center;font-weight:800;font-size:16px;background:#eef2ff;color:#1e1b4b}
+.blk-row{display:flex;gap:6px}.blk-row>.blk{flex:1;min-width:0}
+.blk table{width:100%;border-collapse:collapse;font-size:12px}
+.blk th,.blk td{border:1px solid #c9ccd1;padding:4px 6px;text-align:left}
+.blk th{background:#eaeef2}
+/* 디자인 비교용 스타일 변형 */
+.st-grad{background:linear-gradient(90deg,#7c3aed,#ec4899,#f59e0b);color:#fff}
+.st-neon{color:#7c3aed;font-weight:900;letter-spacing:.02em}
+.st-quiet{background:none;color:#111;font-weight:700;text-align:left;font-size:17px;padding:14px 0 4px}
+.st-gray{filter:grayscale(1);opacity:.75}
+.st-small{font-size:11px;color:#8b949e}
+.st-broken{font-family:"Comic Sans MS","Gungsuh",cursive;font-size:17px;color:#b91c1c}
+.st-off{transform:translateX(18px)}
+.st-overlap{margin-top:-14px}
+.issue{outline:2px dashed #e5534b;outline-offset:2px}
+.ib{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#e5534b;color:#fff;font-family:var(--mono);font-size:11px;font-weight:700;flex:0 0 auto}
+.blk .ib{position:absolute;top:-8px;right:2px;z-index:2}
+.issues{list-style:none;padding:0;margin:4px 0 8px}
+.issues li{display:flex;gap:8px;align-items:flex-start;font-size:14.5px;margin:6px 0}
+.issues li .ib{margin-top:3px}
+
+.tpl{border:1px solid var(--line);border-radius:10px;background:var(--panel);overflow:hidden;margin:4px 0 10px}
+.tpl-h{padding:10px 12px;border-bottom:1px solid var(--line2)}
+.tpl-t{font-weight:700;color:var(--fg-hi)}
+.tpl-u{font-size:13px;color:var(--dim)}
+.tpl-b{margin:0;padding:12px;font-family:var(--mono);font-size:13px;line-height:1.65;white-space:pre-wrap;word-break:break-word;color:var(--fg)}
+.fill{color:#0d1117;background:var(--yellow);border-radius:3px;padding:0 2px}
+.btn.copy{margin-top:0}
+.card .btn.copy{margin-top:8px;min-height:44px}
+.pbox{border:1px solid #1f6feb;border-radius:12px;background:#0c2d4a55;padding:10px 12px;margin:0 0 14px}
+.pb-l{font-family:var(--mono);font-size:11.5px;color:var(--blue);margin-bottom:4px}
+.pb-t{font-size:15px;color:var(--fg-hi);line-height:1.6}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.chip{font-family:var(--mono);font-size:13px;border:1px solid var(--line);border-radius:999px;padding:6px 12px;min-height:36px;color:var(--dim)}
+.chip.on{border-color:var(--green-d);color:var(--green);background:#0f2a17}
+.card .tag.k-core{color:var(--purple)}.card .tag.k-template{color:var(--yellow)}
+.limg{display:block;max-width:100%;border-radius:8px;border:1px solid var(--line);margin:0 0 12px}
+.offscreen{position:fixed;left:-9999px;top:0;opacity:0}

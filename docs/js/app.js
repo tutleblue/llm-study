@@ -66,13 +66,20 @@
 
   /* ---------- course index ---------- */
   var LESSONS = [], BYID = {}, CARDS = [];
+  function lessonCards(l) { // 레슨 카드 + 템플릿 스텝에서 나오는 템플릿 카드
+    var out = (l.cards || []).slice();
+    l.steps.forEach(function (st) {
+      if (st.type === "template" && st.card) out.push({ id: st.card, kind: "template", title: st.title, use: st.use, body: st.body });
+    });
+    return out;
+  }
   C.weeks.forEach(function (w) {
     if (!w.days) return;
     w.days.forEach(function (d, di) {
       d.lessons.forEach(function (l, li) {
         var full = { lesson: l, week: w, day: d, dayNo: di + 1, no: li + 1, path: w.id + "/day" + (di + 1) + "/" + String(li + 1).padStart(2, "0") };
         LESSONS.push(full); BYID[l.id] = full;
-        (l.cards || []).forEach(function (c) { CARDS.push({ card: c, from: full }); });
+        lessonCards(l).forEach(function (c) { CARDS.push({ card: c, from: full }); });
       });
     });
   });
@@ -83,7 +90,8 @@
     return -1;
   }
   function stepKey(lessonId, idx) { return lessonId + "#" + idx; }
-  function isQuestion(st) { return st.type !== "learn"; }
+  var Q_TYPES = ["mcq", "ox", "order", "fix"];
+  function isQuestion(st) { return Q_TYPES.indexOf(st.type) >= 0; }
 
   /* ---------- tabbar ---------- */
   var TABS = [["", "⌂", "learn"], ["review", "↻", "review"], ["cards", "▤", "cards"], ["stats", "▥", "stats"]];
@@ -198,24 +206,84 @@
       '<div class="pbar"><i id="pb"></i></div><span class="cnt">' + Math.min(P.resolved + 1, total) + "/" + total + "</span></div>";
     h += '<div class="lbody pop">';
     var fname = P.mode === "lesson" ? P.f.path : (it.from ? it.from.path : "");
-    if (st.type === "learn") {
-      h += cmd((st.try ? "try " : "cat ") + fname + (st.try ? "" : ".md"));
-      h += '<div class="doc">' + md(st.md) + "</div>";
-      if (st.src) h += srcHtml(st.src);
+    if (!isQuestion(st)) {
+      h += displayHtml(st, fname);
     } else {
-      var label = { mcq: "? 고르기", ox: "? 맞으면 O, 틀리면 X", order: "? 순서대로 누르기" }[st.type] || "?";
+      var label = { mcq: "? 고르기", ox: "? 맞으면 O, 틀리면 X", order: "? 순서대로 누르기", fix: "? 프롬프트 고치기" }[st.type] || "?";
       if (P.wrong[it.key]) label = "↻ 다시 풀기 — " + label;
       h += '<div class="qhead">' + (P.mode !== "lesson" && it.from ? esc(it.from.lesson.title) + " · " : "") + esc(label) + "</div>";
       h += '<p class="qtext">' + inline(esc(st.q)) + "</p>";
       if (st.code) h += '<div class="doc"><pre><code>' + esc(st.code) + "</code></pre></div>";
+      if (st.prompt) h += '<div class="pbox"><div class="pb-l">보낸 프롬프트</div><div class="pb-t">' + richText(st.prompt) + '</div></div>';
       h += '<div id="qarea"></div>';
     }
     h += '</div><div class="lfoot" id="foot"></div></div>';
     app.innerHTML = h;
     document.getElementById("pb").style.width = (P.resolved / total * 100) + "%";
     window.scrollTo(0, 0);
-    if (st.type === "learn") footer('<button class="btn" data-act="next">계속 →</button>');
+    if (!isQuestion(st)) footer('<button class="btn" data-act="next">계속 →</button>');
     else { drawQuestion(it); footer('<button class="btn" data-act="check" disabled>확인</button>'); }
+  }
+  /* ---- 보기 전용 스텝: learn / chat / screen / template ---- */
+  function richText(t, marks) { // escape → 강조 → `코드` → 줄바꿈
+    var h = esc(t);
+    (marks || []).forEach(function (m) { var e = esc(m); if (e) h = h.split(e).join("<mark>" + e + "</mark>"); });
+    return h.replace(/`([^`\n]+)`/g, "<code>$1</code>").replace(/\n/g, "<br>");
+  }
+  function copyText(text) {
+    function fallback() { // 클립보드 API가 막히면 예전 방식(execCommand)으로 한 번 더 시도
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", ""); ta.className = "offscreen";
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, text.length);
+      var ok = false; try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      ta.remove();
+      toast(ok ? "프롬프트를 복사했어요" : "복사가 막혀 있어요. 글자를 길게 눌러 복사하세요");
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { toast("프롬프트를 복사했어요"); }, fallback);
+    else fallback();
+  }
+  function tplHtml(t) {
+    var body = esc(t.body).replace(/\[([^\]\n]{1,30})\]/g, '<span class="fill">[$1]</span>');
+    return '<div class="tpl"><div class="tpl-h"><div class="tpl-t">' + esc(t.title) + "</div>" + (t.use ? '<div class="tpl-u">언제: ' + esc(t.use) + "</div>" : "") +
+      '</div><pre class="tpl-b">' + body + "</pre></div>";
+  }
+  var BLOCKS = { bar: 1, input: 1, button: 1, text: 1, card: 1, img: 1, table: 1, heading: 1, para: 1, blank: 1, chip: 1, hero: 1, row: 1 };
+  function screenHtml(st) {
+    var nums = {}; (st.issues || []).forEach(function (x, i) { nums[x.id] = i + 1; });
+    var kind = ["phone", "desktop", "doc", "web"].indexOf(st.kind) >= 0 ? st.kind : "phone";
+    function blk(k) {
+      var t = BLOCKS[k.t] ? k.t : "text", inner;
+      if (t === "table") inner = "<table>" + (k.rows || []).map(function (r, ri) { return "<tr>" + r.map(function (c) { return (ri ? "<td>" : "<th>") + esc(c) + (ri ? "</td>" : "</th>"); }).join("") + "</tr>"; }).join("") + "</table>";
+      else if (t === "row") inner = (k.items || []).map(blk).join("");
+      else inner = richText(k.text || "");
+      var n = k.issue && nums[k.issue];
+      var sty = k.style ? " st-" + String(k.style).replace(/[^a-z0-9-]/gi, "") : "";
+      return '<div class="blk blk-' + t + (n ? " issue" : "") + sty + '">' + (n ? '<span class="ib">' + n + "</span>" : "") + inner + "</div>";
+    }
+    var h = (st.title ? '<div class="scr-cap">' + esc(st.title) + "</div>" : "") + '<div class="mock mock-' + kind + '"><div class="mock-in">' + (st.blocks || []).map(blk).join("") + "</div></div>";
+    if (st.issues && st.issues.length) h += '<ol class="issues">' + st.issues.map(function (x, i) { return '<li><span class="ib">' + (i + 1) + "</span><span>" + richText(x.text) + "</span></li>"; }).join("") + "</ol>";
+    if (st.note) h += '<div class="note">// ' + richText(st.note) + "</div>";
+    return h;
+  }
+  function chatHtml(st) {
+    var badge = st.label === "bad" ? '<span class="cbadge bad">✘ 이렇게 시키면</span>' : st.label === "good" ? '<span class="cbadge good">✔ 이렇게 시키면</span>' : "";
+    var h = '<div class="chat' + (st.label === "bad" || st.label === "good" ? " " + st.label : "") + '"><div class="chat-top">' + badge + '<span class="tool">' + esc(st.tool || "AI 채팅") + "</span></div>";
+    h += (st.messages || []).map(function (m) {
+      var me = m.role === "user";
+      return '<div class="msg ' + (me ? "me" : "ai") + '"><div class="who">' + (me ? "나" : "AI") + '</div><div class="bubble">' + richText(m.text, m.highlight) + "</div></div>";
+    }).join("");
+    h += "</div>";
+    if (st.note) h += '<div class="note">// ' + richText(st.note) + "</div>";
+    return h;
+  }
+  function displayHtml(st, fname) {
+    if (st.type === "chat") return cmd("chat " + (st.label === "bad" ? "--before" : st.label === "good" ? "--after" : "")) + chatHtml(st);
+    if (st.type === "screen") return cmd("open " + (st.label === "good" ? "result --fixed" : "result")) + screenHtml(st);
+    if (st.type === "template") return cmd("cat prompts/" + String(st.card || "template").replace(/^t-/, "") + ".txt") + tplHtml(st) + '<button class="btn ghost copy" data-act="copy">⧉ 프롬프트 복사</button>';
+    var h = cmd((st.try ? "try " : "cat ") + fname + (st.try ? "" : ".md")) + '<div class="doc">' + md(st.md) + "</div>";
+    if (st.img && /^img\/[\w\/.-]+\.(webp|png|jpg|svg)$/.test(st.img.src)) h += '<img class="limg" src="' + esc(st.img.src) + '" alt="' + esc(st.img.alt || "") + '" loading="lazy">';
+    if (st.src) h += srcHtml(st.src);
+    return h;
   }
   function srcHtml(src) {
     var list = Array.isArray(src) ? src : [src];
@@ -227,7 +295,7 @@
 
   function drawQuestion(it) {
     var st = it.st, area = document.getElementById("qarea"), h = "";
-    if (st.type === "mcq") {
+    if (st.type === "mcq" || st.type === "fix") {
       if (!it.perm) it.perm = shuffle(st.choices.map(function (_, i) { return i; }));
       h = '<div class="choices">' + it.perm.map(function (ci, n) {
         return '<button class="choice" data-ch="' + ci + '"><span class="n">[' + (n + 1) + "]</span><span>" + inline(esc(st.choices[ci])) + "</span></button>";
@@ -249,7 +317,7 @@
 
   function check() {
     var it = P.items[P.queue[P.pos]], st = it.st, ok;
-    if (st.type === "mcq") ok = P.sel === st.answer;
+    if (st.type === "mcq" || st.type === "fix") ok = P.sel === st.answer;
     else if (st.type === "ox") ok = (P.sel === 1) === !!st.answer;
     else if (st.type === "order") ok = P.order.every(function (v, i) { return v === i; });
     P.checked = true;
@@ -259,7 +327,7 @@
     if (st.type !== "order") {
       var selB = area.querySelector('[data-ch="' + P.sel + '"]');
       if (selB) selB.classList.add(ok ? "ok" : "bad");
-      if (!ok && st.type === "mcq") { var r = area.querySelector('[data-ch="' + st.answer + '"]'); if (r) r.classList.add("ok"); }
+      if (!ok && (st.type === "mcq" || st.type === "fix")) { var r = area.querySelector('[data-ch="' + st.answer + '"]'); if (r) r.classList.add("ok"); }
     }
     var exp = st.explain ? '<div class="fb-body">' + inline(esc(st.explain)) + "</div>" : "";
     var right = "";
@@ -277,7 +345,7 @@
 
   function next() {
     var it = P.items[P.queue[P.pos]];
-    if (it.st.type === "learn") P.resolved++;
+    if (!isQuestion(it.st)) P.resolved++;
     P.pos++;
     if (P.pos >= P.queue.length) finish(); else renderPlayer();
   }
@@ -290,8 +358,9 @@
     if (P.mode === "lesson") {
       xp = 10 + (acc === 1 ? 5 : 0);
       var had = S.get().cards.slice();
-      var cardIds = (P.f.lesson.cards || []).map(function (c) { return c.id; });
-      newCards = (P.f.lesson.cards || []).filter(function (c) { return had.indexOf(c.id) < 0; });
+      var lc = lessonCards(P.f.lesson);
+      var cardIds = lc.map(function (c) { return c.id; });
+      newCards = lc.filter(function (c) { return had.indexOf(c.id) < 0; });
       S.finishLesson(P.f.lesson.id, acc, xp, minutes, Object.keys(P.wrong), cardIds);
     } else {
       xp = right * 2;
@@ -331,6 +400,7 @@
     var act = b.getAttribute("data-act");
     if (act === "quit") { if (confirm("레슨을 그만둘까요? 이번 진행은 저장되지 않아요.")) { P = null; location.hash = "#/"; } return; }
     if (act === "check") { check(); return; }
+    if (act === "copy") { copyText(it.st.body); return; }
     if (act === "next") { next(); return; }
     if (P.checked) return;
     if (b.hasAttribute("data-ch")) {
@@ -380,19 +450,33 @@
   }
 
   /* ---------- cards ---------- */
+  var KIND = { core: "# 핵심", tip: "# 바이브코딩 잡지식", template: "# 프롬프트 템플릿" };
   function cardHtml(c, isNew) {
-    return '<div class="card' + (isNew ? " pop" : "") + '"><div class="tag' + (c.kind === "core" ? " core" : "") + '">' + (isNew ? "★ 새 카드 · " : "") + (c.kind === "core" ? "# 핵심" : "# 바이브코딩 잡지식") + '</div><div class="t">' + esc(c.title) + '</div><div class="b doc">' + md(c.body) + "</div></div>";
+    var kind = KIND[c.kind] ? c.kind : "tip";
+    var head = '<div class="card' + (isNew ? " pop" : "") + '"><div class="tag k-' + kind + '">' + (isNew ? "★ 새 카드 · " : "") + KIND[kind] + "</div>";
+    if (kind === "template") return head + tplHtml(c) + '<button class="btn ghost copy" data-copy-card="' + esc(c.id) + '">⧉ 복사</button></div>';
+    return head + '<div class="t">' + esc(c.title) + '</div><div class="b doc">' + md(c.body) + "</div></div>";
   }
+  var cardFilter = "all";
   function renderCards() {
     var got = S.get().cards;
     var h = titlebar("~/llm-study/cards") + cmd("ls cards/ | wc -l");
     h += '<div class="out">' + got.length + " / " + CARDS.length + " 장 모음</div>";
     if (!CARDS.length) h += '<div class="empty">아직 카드가 없어요.</div>';
-    CARDS.forEach(function (x) {
+    var F = [["all", "전체"], ["template", "템플릿"], ["core", "핵심"], ["tip", "잡지식"]];
+    h += '<div class="chips">' + F.map(function (f) {
+      var n = CARDS.filter(function (x) { return (f[0] === "all" || (x.card.kind || "tip") === f[0]) && got.indexOf(x.card.id) >= 0; }).length;
+      return '<button class="chip' + (cardFilter === f[0] ? " on" : "") + '" data-cf="' + f[0] + '">' + f[1] + " " + n + "</button>";
+    }).join("") + "</div>";
+    CARDS.filter(function (x) { return cardFilter === "all" || (x.card.kind || "tip") === cardFilter; }).forEach(function (x) {
       if (got.indexOf(x.card.id) >= 0) h += cardHtml(x.card);
       else h += '<div class="card locked"><div class="tag">🔒 ' + esc(x.from.path) + '</div><div class="t">???</div><div class="b dim">「' + esc(x.from.lesson.title) + "」 레슨을 끝내면 열려요</div></div>";
     });
     app.innerHTML = h;
+    app.querySelectorAll("[data-cf]").forEach(function (b) { b.onclick = function () { cardFilter = b.getAttribute("data-cf"); renderCards(); }; });
+    app.querySelectorAll("[data-copy-card]").forEach(function (b) {
+      b.onclick = function () { var id = b.getAttribute("data-copy-card"); var x = CARDS.filter(function (c) { return c.card.id === id; })[0]; if (x) copyText(x.card.body); };
+    });
   }
 
   /* ---------- stats ---------- */
